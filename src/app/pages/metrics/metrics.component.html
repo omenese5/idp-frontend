@@ -1,0 +1,137 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold text-slate-800">Métricas de Rendimiento</h2>
+    <p class="text-slate-500 text-sm mt-1">Análisis histórico de los pipelines CI/CD</p>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+  </div>
+
+  <div *ngIf="!loading && stats">
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
+        <div class="p-3 bg-blue-50 rounded-lg text-blue-600 mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+            </svg>
+        </div>
+        <div>
+            <p class="text-slate-500 text-sm font-medium">Despliegues Totales</p>
+            <h3 class="text-3xl font-bold text-slate-800">{{ stats.kpi.total }}</h3>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
+        <div class="p-3 bg-emerald-50 rounded-lg text-emerald-600 mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div>
+            <p class="text-slate-500 text-sm font-medium">Tasa de Éxito</p>
+            <h3 class="text-3xl font-bold text-slate-800">{{ stats.kpi.successRate }}%</h3>
+            <span class="text-xs text-rose-500 font-medium" *ngIf="stats.kpi.failed > 0">{{ stats.kpi.failed }} Fallidos</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
+        <div class="p-3 bg-indigo-50 rounded-lg text-indigo-600 mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div>
+            <p class="text-slate-500 text-sm font-medium">Tiempo Promedio</p>
+            <h3 class="text-3xl font-bold text-slate-800">{{ stats.kpi.avgDuration }}s</h3>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Tendencia de Velocidad</h3>
+            <div class="h-64">
+                <canvas baseChart
+                    [data]="lineChartData"
+                    [options]="lineChartOptions"
+                    [type]="'line'">
+                </canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Últimos Builds</h3>
+            <div class="overflow-hidden">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b border-slate-100">
+                            <th class="py-3 pl-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                Build Info
+                            </th>
+                            
+                            <th class="py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-[120px]">
+                                Estado
+                            </th>
+                            
+                            <th class="py-3 pr-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider w-[100px]">
+                                Duración
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100">
+                        <tr *ngFor="let build of stats.recentBuilds" class="group hover:bg-slate-50 transition-colors">
+                            
+                            <td class="py-3 pl-4">
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-bold text-slate-700">#{{ build.number }}</span>
+                                        <span *ngIf="build.appName" 
+                                            class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wide whitespace-nowrap">
+                                            {{ build.appName }}
+                                        </span>
+                                    </div>
+                                    <div class="text-xs text-slate-400 mt-1 flex items-center gap-1 whitespace-nowrap">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        {{ build.formattedDate }}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="py-3 text-center">
+                                <span class="px-2 py-1 rounded text-xs font-bold inline-block min-w-[80px]"
+                                    [ngClass]="build.result === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
+                                    {{ build.result === 'SUCCESS' ? 'EXITOSO' : 'FALLIDO' }}
+                                </span>
+                            </td>
+
+                            <td class="py-3 text-right pr-4 text-xs text-slate-500 font-mono">
+                                {{ (build.duration / 1000).toFixed(1) }}s
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Frecuencia de Despliegue (7 Días)</h3>
+        <div class="h-64">
+            <canvas baseChart
+                [data]="barChartData"
+                [options]="barChartOptions"
+                [type]="'bar'">
+            </canvas>
+        </div>
+    </div>
+
+  </div>
+</div>
